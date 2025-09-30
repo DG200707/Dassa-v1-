@@ -1,178 +1,157 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matchmaking App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f1f1f1;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+  <meta charset="UTF-8">
+  <title>YouTube Thumbnail Splitter</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f7f7f7;
+      padding: 30px;
+    }
 
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            width: 350px;
-        }
+    h1 {
+      color: #cc0000;
+    }
 
-        h2 {
-            text-align: center;
-        }
+    input[type="file"] {
+      margin: 20px;
+    }
 
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
+    canvas {
+      display: none;
+    }
 
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+    .pieces {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    .pieces img {
+      width: 200px;
+      border: 2px solid #ccc;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
 
-        button:hover {
-            background-color: #45a049;
-        }
+    button {
+      background-color: #cc0000;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
 
-        #result {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .partner-info {
-            margin-top: 20px;
-        }
-
-        .section label {
-            font-weight: bold;
-        }
-    </style>
+    button:hover {
+      background-color: #a00000;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Matchmaking App</h2>
+  <h1>🖼️ YouTube Thumbnail Splitter (6 Pieces)</h1>
 
-        <!-- Your Information -->
-        <div class="section">
-            <h3>Your Information</h3>
-            <label for="name1">Name:</label>
-            <input type="text" id="name1" placeholder="Enter your name">
+  <input type="file" id="upload" accept="image/*">
+  <div class="pieces" id="output"></div>
+  <button id="downloadAll" style="display: none;">⬇️ Download All as ZIP</button>
 
-            <label for="age1">Age:</label>
-            <input type="number" id="age1" placeholder="Enter your age">
+  <canvas id="canvas" width="1280" height="720"></canvas>
 
-            <label for="country1">Country:</label>
-            <select id="country1">
-                <option value="USA">USA</option>
-                <option value="UK">UK</option>
-                <option value="Canada">Canada</option>
-                <option value="India">India</option>
-                <option value="Australia">Australia</option>
-            </select>
-        </div>
+  <script>
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const output = document.getElementById('output');
+    const downloadAllBtn = document.getElementById('downloadAll');
 
-        <!-- Partner's Information -->
-        <div class="partner-info">
-            <h3>Partner's Information</h3>
-            <label for="name2">Name:</label>
-            <input type="text" id="name2" placeholder="Enter partner's name">
+    let imagePieces = []; // To store base64 image data
 
-            <label for="age2">Age:</label>
-            <input type="number" id="age2" placeholder="Enter partner's age">
+    upload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-            <label for="country2">Country:</label>
-            <select id="country2">
-                <option value="USA">USA</option>
-                <option value="UK">UK</option>
-                <option value="Canada">Canada</option>
-                <option value="India">India</option>
-                <option value="Australia">Australia</option>
-            </select>
-        </div>
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, 1280, 720);
+        output.innerHTML = '';
+        imagePieces = [];
 
-        <!-- Match Button -->
-        <button onclick="generateMatch()">Generate Match</button>
+        const pieceWidth = 1280 / 3;
+        const pieceHeight = 720 / 2;
 
-        <!-- Match Result -->
-        <div id="result"></div>
-    </div>
+        for (let row = 0; row < 2; row++) {
+          for (let col = 0; col < 3; col++) {
+            const pieceCanvas = document.createElement('canvas');
+            pieceCanvas.width = pieceWidth;
+            pieceCanvas.height = pieceHeight;
+            const pieceCtx = pieceCanvas.getContext('2d');
 
-    <script>
-        function generateMatch() {
-    // Get the input values for user and partner
-    const name1 = document.getElementById("name1").value;
-    const age1 = parseInt(document.getElementById("age1").value);
-    const country1 = document.getElementById("country1").value;
+            pieceCtx.drawImage(
+              canvas,
+              col * pieceWidth,
+              row * pieceHeight,
+              pieceWidth,
+              pieceHeight,
+              0,
+              0,
+              pieceWidth,
+              pieceHeight
+            );
 
-    const name2 = document.getElementById("name2").value;
-    const age2 = parseInt(document.getElementById("age2").value);
-    const country2 = document.getElementById("country2").value;
+            const imageData = pieceCanvas.toDataURL('image/png');
+            imagePieces.push({
+              name: `piece_${row + 1}_${col + 1}.png`,
+              data: imageData
+            });
 
-    // Validate inputs
-    if (!name1 || !name2 || isNaN(age1) || isNaN(age2)) {
-        document.getElementById("result").innerHTML = "Please fill out all fields.";
-        return;
-    }
+            const imgElement = new Image();
+            imgElement.src = imageData;
 
-    // Simple matching logic
-    let matchPercentage = 0;
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = `piece_${row + 1}_${col + 1}.png`;
+            link.appendChild(imgElement);
 
-    // Match logic based on age difference
-    let ageDifference = Math.abs(age1 - age2);
-    if (ageDifference <= 5) {
-        matchPercentage += 30;
-    } else if (ageDifference <= 10) {
-        matchPercentage += 20;
-    } else {
-        matchPercentage += 10;
-    }
+            output.appendChild(link);
+          }
+        }
 
-    // Match logic based on country
-    if (country1 === country2) {
-        matchPercentage += 40;
-    } else {
-        matchPercentage += 20;
-    }
+        downloadAllBtn.style.display = 'inline-block';
+      };
 
-    // Random factor for personality match
-    matchPercentage += Math.floor(Math.random() * 30) + 1;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
 
-    // Ensure match percentage is between 0 and 100
-    if (matchPercentage > 100) matchPercentage = 100;
+    downloadAllBtn.addEventListener('click', () => {
+      if (imagePieces.length === 0) return;
 
-    // Display the match percentage
-    document.getElementById("result").innerHTML = `${name1} and ${name2}, your match percentage is ${matchPercentage}%!`;
+      const zip = new JSZip();
+      const folder = zip.folder("thumbnail_pieces");
 
-    // Open the ad link in a new window
-    window.open('https://otieu.com/4/9613171', '_blank', 'width=400,height=300');
-}
-  </script>  
+      imagePieces.forEach(piece => {
+        const base64Data = piece.data.split(',')[1]; // remove "data:image/png;base64,"
+        folder.file(piece.name, base64Data, { base64: true });
+      });
+
+      zip.generateAsync({ type: "blob" }).then(content => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = "thumbnail_pieces.zip";
+        link.click();
+      });
+    });
+  </script>
+
 </body>
 </html>
