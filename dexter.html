@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchmaking App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f1f1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .partner-info {
+            margin-top: 20px;
+        }
+
+        .section label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Matchmaking App</h2>
+
+        <!-- Your Information -->
+        <div class="section">
+            <h3>Your Information</h3>
+            <label for="name1">Name:</label>
+            <input type="text" id="name1" placeholder="Enter your name">
+
+            <label for="age1">Age:</label>
+            <input type="number" id="age1" placeholder="Enter your age">
+
+            <label for="country1">Country:</label>
+            <select id="country1">
+                <option value="USA">USA</option>
+                <option value="UK">UK</option>
+                <option value="Canada">Canada</option>
+                <option value="India">India</option>
+                <option value="Australia">Australia</option>
+            </select>
+        </div>
+
+        <!-- Partner's Information -->
+        <div class="partner-info">
+            <h3>Partner's Information</h3>
+            <label for="name2">Name:</label>
+            <input type="text" id="name2" placeholder="Enter partner's name">
+
+            <label for="age2">Age:</label>
+            <input type="number" id="age2" placeholder="Enter partner's age">
+
+            <label for="country2">Country:</label>
+            <select id="country2">
+                <option value="USA">USA</option>
+                <option value="UK">UK</option>
+                <option value="Canada">Canada</option>
+                <option value="India">India</option>
+                <option value="Australia">Australia</option>
+            </select>
+        </div>
+
+        <!-- Match Button -->
+        <button onclick="generateMatch()">Generate Match</button>
+
+        <!-- Match Result -->
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function generateMatch() {
+    // Get the input values for user and partner
+    const name1 = document.getElementById("name1").value;
+    const age1 = parseInt(document.getElementById("age1").value);
+    const country1 = document.getElementById("country1").value;
+
+    const name2 = document.getElementById("name2").value;
+    const age2 = parseInt(document.getElementById("age2").value);
+    const country2 = document.getElementById("country2").value;
+
+    // Validate inputs
+    if (!name1 || !name2 || isNaN(age1) || isNaN(age2)) {
+        document.getElementById("result").innerHTML = "Please fill out all fields.";
+        return;
+    }
+
+    // Simple matching logic
+    let matchPercentage = 0;
+
+    // Match logic based on age difference
+    let ageDifference = Math.abs(age1 - age2);
+    if (ageDifference <= 5) {
+        matchPercentage += 30;
+    } else if (ageDifference <= 10) {
+        matchPercentage += 20;
+    } else {
+        matchPercentage += 10;
+    }
+
+    // Match logic based on country
+    if (country1 === country2) {
+        matchPercentage += 40;
+    } else {
+        matchPercentage += 20;
+    }
+
+    // Random factor for personality match
+    matchPercentage += Math.floor(Math.random() * 30) + 1;
+
+    // Ensure match percentage is between 0 and 100
+    if (matchPercentage > 100) matchPercentage = 100;
+
+    // Display the match percentage
+    document.getElementById("result").innerHTML = `${name1} and ${name2}, your match percentage is ${matchPercentage}%!`;
+
+    // Open the ad link in a new window
+    window.open('https://otieu.com/4/9613171', '_blank', 'width=400,height=300');
+}
+  </script>  
+</body>
+</html>
