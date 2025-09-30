@@ -1,0 +1,16 @@
+{
+  "name": "dexter-server",
+  "version": "1.0.0",
+  "description": "Simple server to run dexter.html",
+  "main": "dexter.js",
+  "scripts": {
+    "start": "node dexter.js",
+    "dev": "nodemon dexter.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
